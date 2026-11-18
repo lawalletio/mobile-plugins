@@ -1,0 +1,31 @@
+{
+  "id": "me.lemon",
+  "name": "Lemon",
+  "description": "Your Lemon BTC balance as a Lightning wallet",
+  "version": "0.1.0",
+  "api": 1,
+  "main": "index.js",
+  "provides": [
+    "wallet"
+  ],
+  "wallet": {
+    "methods": [
+      "get_balance",
+      "make_invoice",
+      "lookup_invoice",
+      "list_transactions"
+    ]
+  },
+  "background": {
+    "pollSec": 60
+  },
+  "permissions": {
+    "hosts": [
+      "api.lemoncash.io"
+    ],
+    "secrets": true,
+    "webLogin": {
+      "url": "https://www.lemon.me"
+    }
+  }
+}
