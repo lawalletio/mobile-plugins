@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+# lwdev: LaWallet plugin development from a terminal or an agent. Docs: ../SKILL.md
+#
+#   lwdev setup                 clone android-wallet (+ plugins-dev/, a checkout of mobile-plugins)
+#   lwdev app                   boot an emulator if none, build the debug app, install it side by side, launch it
+#   lwdev serve                 serve plugins-dev/ to the app (foreground; reuses a server already running)
+#   lwdev new <name> <id> <Title>   scaffold plugins-dev/plugins/<name> from the template
+#   lwdev test <name>           run plugins-dev/plugins/<name>/test.mjs
+#   lwdev install <id>          Settings → Plugins → Local (development) → Install (or Reload if installed)
+#   lwdev reload <id>           same as install: pushes the current index.js, keeps the plugin's login
+#   lwdev open                  open Settings → Plugins in the app
+#   lwdev shot [file.png]       screenshot of the device
+#   lwdev status                what's set up, what's running
+#
+# Env: LAWALLET_DEV (default ~/lawallet-dev), LAWALLET_ANDROID (an existing android-wallet checkout),
+#      LAWALLET_PLUGINS_REPO (your fork), ANDROID_SERIAL, LAWALLET_AVD, LAWALLET_ID_SUFFIX (default .preview),
+#      LAWALLET_SERVE_PORT (this computer's port for lwdev serve when 8787 is taken; the device keeps using 8787).
+set -euo pipefail
+
+DEV_HOME="${LAWALLET_DEV:-$HOME/lawallet-dev}"
+APP_DIR="${LAWALLET_ANDROID:-$DEV_HOME/android-wallet}"
+PLUGINS_REPO="${LAWALLET_PLUGINS_REPO:-https://github.com/lawalletio/mobile-plugins}"
+APP_REPO="https://github.com/lawalletio/android-wallet"
+HOST_BRANCH="claude/plugin-wallet-modules-39013a" # the plugin host, until lawalletio/android-wallet#73 merges into main
+SUFFIX="${LAWALLET_ID_SUFFIX-.preview}"            # a side-by-side copy: never touches a real LaWallet install
+PKG="io.lawallet.wallet$SUFFIX"
+ACTIVITY="io.lawallet.wallet.MainActivity"
+PORT=8787                                          # the debug build's default plugins dev URL (localhost:8787)
+HOST_PORT="${LAWALLET_SERVE_PORT:-$PORT}"          # where lwdev serve listens on this computer (adb reverse maps it)
+PLUGINS="$APP_DIR/plugins-dev"
+
+die() { echo "lwdev: $*" >&2; exit 1; }
+say() { echo "lwdev: $*"; }
+need() { command -v "$1" >/dev/null 2>&1 || die "$1 not found. $2"; }
+
+sdk_tool() { # $1 = relative path in the Android SDK
+  for root in "${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}" "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
+    [ -n "$root" ] && [ -x "$root/$1" ] && { echo "$root/$1"; return; }
+  done
+}
+command -v adb >/dev/null 2>&1 || { a=$(sdk_tool platform-tools/adb); [ -n "$a" ] && PATH="$(dirname "$a"):$PATH"; }
+if [ -z "${JAVA_HOME:-}" ] && [ -d "/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]; then
+  export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+fi
+
+serial() { # ANDROID_SERIAL, else the first emulator, else the first device
+  if [ -n "${ANDROID_SERIAL:-}" ]; then echo "$ANDROID_SERIAL"; return; fi
+  local all; all=$(adb devices | awk 'NR>1 && $2=="device"{print $1}')
+  { echo "$all" | grep '^emulator-' || echo "$all"; } | head -1
+}
+dev() { local s; s=$(serial); [ -n "$s" ] || die "no device. Run: lwdev app (boots an emulator)"; echo "$s"; }
+a() { local s; s=$(serial); [ -n "$s" ] || die "no device. Run: lwdev app (boots an emulator)"; adb -s "$s" "$@"; }
+host_ok() { [ -f "$APP_DIR/scripts/plugins-dev.py" ]; }
+server_up() { curl -fsS --max-time 2 "http://localhost:$HOST_PORT/index.json" 2>/dev/null; }
+
+# ---- UI driving (Compose test tags are exposed as resource ids) ----
+dump() { a shell uiautomator dump /sdcard/lwdev.xml >/dev/null 2>&1 && a exec-out cat /sdcard/lwdev.xml; }
+find_tag() { # prints "x y" (center) of the node whose resource-id is $1, or nothing
+  python3 -c '
+import sys, re, xml.etree.ElementTree as ET
+try: root = ET.fromstring(sys.stdin.read())
+except ET.ParseError: sys.exit()
+for n in root.iter("node"):
+    if n.get("resource-id") == sys.argv[1]:
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds")))
+        print((x1 + x2) // 2, (y1 + y2) // 2); break' "$1"
+}
+tap_tag() { local xy; xy=$(dump | find_tag "$1"); [ -n "$xy" ] || return 1; a shell input tap $xy; }
+scroll_down() {
+  local wh w h; wh=$(a shell wm size | awk -F': ' '/Physical/{print $2}' | tr -d '\r'); w=${wh%x*}; h=${wh#*x}
+  a shell input swipe $((w / 2)) $((h * 3 / 4)) $((w / 2)) $((h / 3)) 250
+}
+open_plugins() {
+  a reverse tcp:$PORT tcp:"$HOST_PORT" >/dev/null
+  a shell am start -n "$PKG/$ACTIVITY" --es route settings/plugins >/dev/null 2>&1 || die "$PKG isn't installed. Run: lwdev app"
+  sleep 2
+}
+
+cmd_setup() {
+  need git "Install git."; need python3 "Install Python 3."; need node "Install Node.js 20+ (plugin tests run on it)."
+  if [ ! -e "$APP_DIR/.git" ]; then
+    mkdir -p "$(dirname "$APP_DIR")"
+    say "cloning $APP_REPO → $APP_DIR"
+    git clone "$APP_REPO" "$APP_DIR"
+    host_ok || { say "main has no plugin host yet; checking out $HOST_BRANCH"; git -C "$APP_DIR" checkout -q "$HOST_BRANCH"; }
+  fi
+  # An existing checkout is the user's: never switch its branch.
+  host_ok || die "$APP_DIR has no scripts/plugins-dev.py. Check out main (after #73 merges) or $HOST_BRANCH there."
+  if [ ! -e "$PLUGINS/.git" ]; then (cd "$APP_DIR" && python3 scripts/plugins-dev.py import "$PLUGINS_REPO"); fi
+  say "app:     $APP_DIR ($(git -C "$APP_DIR" branch --show-current))"
+  say "plugins: $PLUGINS ($(git -C "$PLUGINS" branch --show-current), $(git -C "$PLUGINS" remote get-url origin))"
+  say "next:    lwdev app, then lwdev serve (keep it running)"
+}
+
+boot_emulator() {
+  local emu avd; emu=$(sdk_tool emulator/emulator); [ -n "$emu" ] || die "no Android emulator found. Install Android Studio (SDK + emulator)."
+  avd="${LAWALLET_AVD:-$("$emu" -list-avds | head -1)}"
+  [ -n "$avd" ] || die "no emulator image. Create one in Android Studio → Device Manager (API 34+)."
+  say "booting emulator $avd"
+  nohup "$emu" -avd "$avd" -no-snapshot-save >/dev/null 2>&1 &
+  adb wait-for-device
+  for _ in $(seq 1 90); do [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && return; sleep 2; done
+  die "the emulator didn't finish booting"
+}
+
+cmd_app() {
+  host_ok || die "no android-wallet checkout at $APP_DIR. Run: lwdev setup"
+  [ -n "$(serial)" ] || boot_emulator
+  local s apk out; s=$(dev)
+  say "building the debug app (first build takes a few minutes)"
+  # Debug key on purpose: the side-by-side copy is a dev install, and a personal release keystore wouldn't match it.
+  (cd "$APP_DIR" && env -u LAWALLET_SIGNING_PROPERTIES -u LAWALLET_KEYSTORE ./gradlew assembleDebug ${SUFFIX:+-PidSuffix=$SUFFIX} --no-configuration-cache -q)
+  apk="$APP_DIR/app/build/outputs/apk/debug/app-debug.apk"
+  say "installing $PKG on $s"
+  if ! out=$(adb -s "$s" install -r "$apk" 2>&1); then
+    echo "$out" >&2
+    case "$out" in
+      *INSUFFICIENT_STORAGE*) die "the device is out of space. Free some (never by uninstalling a real LaWallet: it wipes the wallet)." ;;
+      *UPDATE_INCOMPATIBLE*) die "$PKG is installed with another signing key. Install under another suffix: LAWALLET_ID_SUFFIX=.plugins lwdev app" ;;
+      *) die "install failed" ;;
+    esac
+  fi
+  adb -s "$s" reverse tcp:$PORT tcp:"$HOST_PORT" >/dev/null
+  adb -s "$s" shell am start -n "$PKG/$ACTIVITY" >/dev/null
+  say "launched $PKG. First time: sign up or log in inside the app; Plugins are under Settings."
+}
+
+cmd_serve() {
+  host_ok || die "run: lwdev setup"
+  if server_up >/dev/null; then
+    say "a plugins server already runs on :$HOST_PORT and lists: $(server_up)"
+    say "if that isn't $PLUGINS, stop it, or serve on another port: LAWALLET_SERVE_PORT=8788 lwdev serve"
+    [ -n "$(serial)" ] && a reverse tcp:$PORT tcp:"$HOST_PORT" >/dev/null
+    return
+  fi
+  [ -n "$(serial)" ] && a reverse tcp:$PORT tcp:"$HOST_PORT" >/dev/null
+  cd "$APP_DIR" && exec python3 scripts/plugins-dev.py --port "$HOST_PORT"
+}
+
+cmd_new() {
+  local name="${1:-}" id="${2:-}" title="${3:-}"
+  [[ "$name" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || die "usage: lwdev new <folder-name> <reverse.dns.id> <Title>"
+  [[ "$id" =~ ^[a-z0-9]+(\.[a-z0-9-]+)+$ ]] || die "the id must be reverse-DNS, lowercase (io.example.wallet)"
+  [ -n "$title" ] || die "usage: lwdev new <folder-name> <reverse.dns.id> <Title>"
+  [ -d "$PLUGINS/template" ] || die "no template in $PLUGINS. Pull the latest mobile-plugins there."
+  [ ! -e "$PLUGINS/plugins/$name" ] || die "plugins/$name already exists"
+  cp -R "$PLUGINS/template" "$PLUGINS/plugins/$name"
+  node -e '
+const fs = require("fs"), f = process.argv[1], m = JSON.parse(fs.readFileSync(f));
+Object.assign(m, { id: process.argv[2], name: process.argv[3], description: `Your ${process.argv[3]} balance as a Lightning wallet`, version: "0.1.0" });
+fs.writeFileSync(f, JSON.stringify(m, null, 2) + "\n");' "$PLUGINS/plugins/$name/manifest.json" "$id" "$title"
+  say "created $PLUGINS/plugins/$name ($id). Next: edit manifest.json permissions and index.js, then lwdev test $name"
+}
+
+cmd_test() {
+  [ -n "${1:-}" ] || die "usage: lwdev test <folder-name>"
+  node "$PLUGINS/plugins/$1/test.mjs"
+}
+
+cmd_install() {
+  local id="${1:-}"; [ -n "$id" ] || die "usage: lwdev install <plugin id>"
+  server_up >/dev/null || die "the plugins server isn't running. Start it: lwdev serve"
+  open_plugins
+  tap_tag local-refresh >/dev/null 2>&1 || true # re-read manifests (Reload reuses the last ones read)
+  sleep 2
+  for _ in 1 2 3 4 5 6; do
+    if tap_tag "local-install-$id"; then
+      sleep 3
+      say "tapped Install/Reload for $id. Check with: lwdev shot"
+      return
+    fi
+    scroll_down; sleep 1
+  done
+  if ! dump | grep -q 'resource-id="plugins-add"'; then
+    die "Settings → Plugins didn't open. Is the app logged in? Open it and sign up or log in once."
+  fi
+  die "$id isn't in Local (development). The server lists: $(server_up). Check the manifest id, then lwdev status."
+}
+
+cmd_shot() {
+  local f="${1:-lawallet-screen.png}"
+  a exec-out screencap -p > "$f"
+  say "screenshot: $(cd "$(dirname "$f")" && pwd)/$(basename "$f")"
+}
+
+cmd_status() {
+  say "app checkout:  $APP_DIR $(host_ok && echo "(ok, $(git -C "$APP_DIR" branch --show-current))" || echo "(missing: lwdev setup)")"
+  say "plugins-dev:   $PLUGINS $([ -e "$PLUGINS/.git" ] && echo "($(git -C "$PLUGINS" branch --show-current))" || echo "(missing: lwdev setup)")"
+  say "device:        $(serial || true)"
+  [ -n "$(serial)" ] && say "app installed: $(a shell pm list packages "$PKG" | grep -qx "package:$PKG" && echo "$PKG" || echo "no (lwdev app)")"
+  say "server :$HOST_PORT:  $(server_up || echo "not running (lwdev serve)")"
+}
+
+case "${1:-}" in
+  setup) cmd_setup ;;
+  app) cmd_app ;;
+  serve) cmd_serve ;;
+  new) shift; cmd_new "$@" ;;
+  test) shift; cmd_test "$@" ;;
+  install | reload) shift; cmd_install "$@" ;;
+  open) open_plugins; say "opened Settings → Plugins" ;;
+  shot) shift; cmd_shot "$@" ;;
+  status) cmd_status ;;
+  *) awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"; exit 1 ;;
+esac

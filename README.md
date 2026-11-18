@@ -35,6 +35,7 @@ same data for machines.
 
 | | |
 |---|---|
+| [Build with an agent](docs/build-with-an-agent.md) | The [`lawallet-plugin`](skills/lawallet-plugin) skill: from a prompt to a plugin on your emulator |
 | [Create a plugin](docs/create-a-plugin.md) | Start from [`template/`](template), exports, testing |
 | [Develop locally](docs/develop-locally.md) | `scripts/plugins-dev.py`, Local (development), Reload |
 | [Install](docs/install.md) | GitHub URL, QR / `lawallet:plugin` links, the permissions sheet |
@@ -62,6 +63,19 @@ the host API, and nothing outside it:
 
 The contract (manifest fields, NIP-47 methods, the host API and the isolation rules) is in
 [docs/plugin-api.md](docs/plugin-api.md). That file is synced from the app repo, whose copy is authoritative.
+
+## Build one with an agent
+
+Install the [`lawallet-plugin`](skills/lawallet-plugin) skill, then ask Claude Code (Opus 5.5) for a plugin. The skill
+clones android-wallet, builds it onto the Android emulator, scaffolds and tests the plugin, and installs it in the
+running app. More in [docs/build-with-an-agent.md](docs/build-with-an-agent.md).
+
+```bash
+git clone --depth 1 https://github.com/lawalletio/mobile-plugins /tmp/lwp
+mkdir -p ~/.claude/skills && cp -R /tmp/lwp/skills/lawallet-plugin ~/.claude/skills/
+mkdir -p ~/lawallet-dev && cd ~/lawallet-dev && claude --model claude-opus-5-5
+# then: /lawallet-plugin Set up LaWallet for Android on the emulator, then build a plugin for <Provider>…
+```
 
 ## Develop locally
 

@@ -34,6 +34,7 @@
       <a href="#directory">Directory</a>
       <a href="#how">How it works</a>
       <a href="#build">Build</a>
+      <a href="#agent">Agent</a>
       <a href="{{REPO_URL}}/tree/main/docs">Docs</a>
     </nav>
     <a class="btn btn-ghost btn-sm" href="{{REPO_URL}}">
@@ -228,7 +229,7 @@
             <pre><code><span class="c"># copy the template and run its test</span>
 <span class="p">$</span> cp -r template plugins/mywallet
 <span class="p">$</span> node plugins/mywallet/test.mjs
-<span class="ok">template: ok</span>
+<span class="ok">Example: ok</span>
 <span class="c"># from android-wallet: serve to a debug build</span>
 <span class="p">$</span> scripts/plugins-dev.py<span class="caret" aria-hidden="true"></span></code></pre>
           </div>
@@ -237,6 +238,7 @@
             <a href="{{REPO_URL}}/blob/main/docs/develop-locally.md"><strong>Develop locally</strong><span>Install &amp; Reload from your Mac</span></a>
             <a href="{{REPO_URL}}/blob/main/docs/install.md"><strong>Install</strong><span>GitHub URL, QR, permissions</span></a>
             <a href="{{REPO_URL}}/blob/main/docs/plugin-api.md"><strong>API reference</strong><span>Manifest, host API, limits</span></a>
+            <a href="#agent" class="doc-wide"><strong>Build with an agent</strong><span>The lawallet-plugin skill: from a prompt to a plugin on your emulator</span></a>
           </div>
         </div>
         <div class="code" data-reveal style="--d:2">
@@ -248,6 +250,63 @@
           <pre class="code-body" data-panel="json" data-lang="json" hidden>{{CODE_JSON}}</pre>
         </div>
       </div>
+    </section>
+
+    <!-- AGENT --------------------------------------------------------------- -->
+    <section class="section" id="agent">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Build with an agent</span>
+        <h2>Describe a wallet. <span class="muted">Get a plugin on your emulator.</span></h2>
+        <p>The <code>lawallet-plugin</code> skill teaches an agent the whole loop. It clones android-wallet, puts a debug
+          build on the Android emulator, scaffolds a plugin and tests it offline, then installs and reloads it in the
+          running app.</p>
+      </div>
+      <ol class="agent-steps">
+        <li class="agent-step spotlight" data-reveal>
+          <div class="agent-text">
+          <span class="step-n">01</span>
+          <h3>Install the skill</h3>
+          <p>Claude Code loads skills from <code>~/.claude/skills</code>.</p>
+          </div>
+          <div class="term">
+            <div class="term-bar"><span></span><span></span><span></span><em>terminal</em>
+              <button class="icon-btn term-copy" type="button" data-copy="{{SKILL_INSTALL}}" data-copy-msg="Install commands copied" aria-label="Copy the install commands"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+            <pre><code><span class="p">$</span> git clone --depth 1 {{REPO_URL}} /tmp/lwp
+<span class="p">$</span> mkdir -p ~/.claude/skills
+<span class="p">$</span> cp -R /tmp/lwp/skills/lawallet-plugin ~/.claude/skills/</code></pre>
+          </div>
+        </li>
+        <li class="agent-step spotlight" data-reveal style="--d:1">
+          <div class="agent-text">
+          <span class="step-n">02</span>
+          <h3>Start the agent</h3>
+          <p>In an empty folder, with Opus 5.5.</p>
+          </div>
+          <div class="term">
+            <div class="term-bar"><span></span><span></span><span></span><em>terminal</em>
+              <button class="icon-btn term-copy" type="button" data-copy="mkdir -p ~/lawallet-dev &amp;&amp; cd ~/lawallet-dev &amp;&amp; claude --model claude-opus-5-5" data-copy-msg="Copied" aria-label="Copy the start command"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+            <pre><code><span class="p">$</span> mkdir -p ~/lawallet-dev &amp;&amp; cd ~/lawallet-dev
+<span class="p">$</span> claude --model claude-opus-5-5</code></pre>
+          </div>
+        </li>
+        <li class="agent-step spotlight" data-reveal style="--d:2">
+          <div class="agent-text">
+          <span class="step-n">03</span>
+          <h3>Ask for a plugin</h3>
+          <p>Name the provider and link its API docs.</p>
+          </div>
+          <div class="prompt">
+            <button class="icon-btn term-copy" type="button" data-copy="{{AGENT_PROMPT}}" data-copy-msg="Prompt copied" aria-label="Copy the prompt"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg></button>
+            <p><b>/lawallet-plugin</b> Set up LaWallet for Android on the emulator, then build a plugin for <mark>&lt;Provider&gt;</mark>. Their API docs: <mark>&lt;link&gt;</mark>. Install it on the emulator when its tests pass.</p>
+          </div>
+        </li>
+      </ol>
+      <div class="flowline" data-reveal aria-label="What the agent runs">
+        <span>lwdev setup</span><span>lwdev app</span><span>lwdev serve</span><span>lwdev new</span><span>lwdev test</span><span>lwdev install</span>
+      </div>
+      <p class="agent-note" data-reveal>You sign in to the app once, and to the provider on its own page. The agent never
+        sees a password. It works on a side-by-side <code>.preview</code> copy, so a real wallet is never touched.
+        <a href="{{REPO_URL}}/blob/main/docs/build-with-an-agent.md">Full guide <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
     </section>
 
     <!-- PLATFORMS ----------------------------------------------------------- -->
