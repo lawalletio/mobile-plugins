@@ -6,6 +6,7 @@ Plugins add new kinds of wallets to the LaWallet apps. Each one is a single Java
 | Plugin | What it does | Version |
 |---|---|---|
 | [Fiwind](plugins/fiwind) | Your Fiwind BTC balance as a Lightning wallet: balance, receive, movements | 0.1.1 |
+| [Lemon](plugins/lemon) | Your Lemon BTC balance as a Lightning wallet: balance, receive, activity | 0.1.0 |
 
 ## Install one
 
