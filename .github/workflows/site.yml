@@ -1,0 +1,50 @@
+name: Plugins and directory
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Plugin tests
+        run: |
+          for t in template/test.mjs plugins/*/test.mjs; do
+            [ -f "$t" ] || continue
+            echo "::group::$t"; node "$t"; echo "::endgroup::"
+          done
+      - name: Build the directory
+        run: node scripts/build-site.mjs
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+
+  # Publishes dist/ to GitHub Pages. Needs Settings → Pages → Source: "GitHub Actions" (not enabled by this workflow).
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,17 @@
+{
+  "id": "io.example.wallet",
+  "name": "Example",
+  "description": "Template: your Example balance as a Lightning wallet",
+  "version": "0.1.0",
+  "api": 1,
+  "main": "index.js",
+  "provides": ["wallet"],
+  "wallet": {
+    "methods": ["get_balance", "make_invoice", "lookup_invoice"]
+  },
+  "permissions": {
+    "hosts": ["api.example.com"],
+    "secrets": true,
+    "webLogin": { "url": "https://login.example.com" }
+  }
+}

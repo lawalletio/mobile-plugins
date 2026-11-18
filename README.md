@@ -1,7 +1,7 @@
 # LaWallet mobile plugins
 
 Plugins add new kinds of wallets to the LaWallet apps. Each one is a single JavaScript module that runs in a sandbox
-(QuickJS on Android, JavaScriptCore on iOS later) and speaks NIP-47, the same language as a Nostr Wallet Connect wallet.
+(QuickJS on Android; JavaScriptCore on iOS is planned, not built yet) and speaks NIP-47, the same language as a Nostr Wallet Connect wallet.
 
 | Plugin | What it does | Version |
 |---|---|---|
@@ -9,8 +9,37 @@ Plugins add new kinds of wallets to the LaWallet apps. Each one is a single Java
 
 ## Install one
 
-In LaWallet for Android: **Settings → Plugins → Add Plugin**, paste `https://github.com/lawalletio/mobile-plugins`,
-and pick a plugin. The app pins what it installs to the commit it read, and checks the bundle's hash before running it.
+In LaWallet for Android (debug builds for now), you can install a plugin in either of two ways:
+- **Settings → Plugins → Add Plugin**: paste `https://github.com/lawalletio/mobile-plugins`, then pick a plugin.
+- **Scan its QR code** from the [directory](#directory).
+
+Either way, you review its permissions before anything installs. The app pins the plugin to the commit it read, and
+checks the bundle's hash before running it. More in [docs/install.md](docs/install.md).
+
+## Directory
+
+`scripts/build-site.mjs` builds a static site from `plugins/*/manifest.json`. Each plugin gets a card with its methods,
+permissions, source link and an install QR code. The script has no dependencies, and CI publishes the site to GitHub
+Pages from `main`.
+
+```bash
+node scripts/build-site.mjs              # → dist/ (also fails on a manifest the app would reject)
+python3 -m http.server 8790 -d dist      # preview at http://localhost:8790
+```
+
+Each QR code holds `lawallet:plugin?url=<urlencoded https://github.com/lawalletio/mobile-plugins/tree/main/plugins/<name>>`.
+The app's scanner opens Add Plugin for that URL, and only accepts HTTPS GitHub links. `dist/plugins.json` lists the
+same data for machines.
+
+## Docs
+
+| | |
+|---|---|
+| [Create a plugin](docs/create-a-plugin.md) | Start from [`template/`](template), exports, testing |
+| [Develop locally](docs/develop-locally.md) | `scripts/plugins-dev.py`, Local (development), Reload |
+| [Install](docs/install.md) | GitHub URL, QR / `lawallet:plugin` links, the permissions sheet |
+| [Plugin API reference](docs/plugin-api.md) | Manifest, NIP-47 methods, errors, host API, limits |
+| [Android and iOS](docs/platforms.md) | Android is live (QuickJS); iOS is planned (JavaScriptCore) |
 
 ## Layout
 
@@ -32,11 +61,11 @@ the host API, and nothing outside it:
 - `prompt`: ask the user for a code
 
 The contract (manifest fields, NIP-47 methods, the host API and the isolation rules) is in
-[android-wallet/docs/plugins.md](https://github.com/lawalletio/android-wallet/blob/main/docs/plugins.md).
+[docs/plugin-api.md](docs/plugin-api.md). That file is synced from the app repo, whose copy is authoritative.
 
 ## Develop locally
 
-From an `android-wallet` checkout:
+Full guide: [docs/develop-locally.md](docs/develop-locally.md). From an `android-wallet` checkout:
 
 ```bash
 scripts/plugins-dev.py import https://github.com/lawalletio/mobile-plugins   # clones this repo into plugins-dev/
@@ -52,8 +81,9 @@ Commit and open pull requests from `plugins-dev/` against this repo.
 
 ## Adding a plugin
 
-1. Create `plugins/<name>/` with the files above. The `id` is reverse-DNS (`io.example.wallet`) and never changes: an
-   update from this repo keeps the user's session; the same id from anywhere else starts clean.
+1. Copy [`template/`](template) to `plugins/<name>/` ([guide](docs/create-a-plugin.md)). The `id` is reverse-DNS
+   (`io.example.wallet`) and never changes: an update from this repo keeps the user's session; the same id from
+   anywhere else starts clean.
 2. List only the hosts and methods it needs. The install sheet shows them to the user.
 3. Keep `test.mjs` passing without network or real credentials (stub `globalThis.host`).
 4. Say in its README what is verified against the real service and what isn't.
