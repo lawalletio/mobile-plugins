@@ -76,4 +76,4 @@ await assert.rejects(plugin.request("pay_invoice", {}, host), { code: "NOT_IMPLE
 await plugin.logout(host);
 assert.deepEqual(await plugin.account(host), { signedIn: false });
 
-console.log("template: ok");
+console.log(`${manifest.name}: ok`);
