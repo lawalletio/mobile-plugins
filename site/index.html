@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LaWallet Plugins</title>
+  <meta name="description" content="Bring any Lightning provider into LaWallet with one sandboxed JavaScript file. Browse plugins, scan to install, or build your own.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:title" content="LaWallet Plugins">
+  <meta property="og:description" content="Wallets, as plugins. One sandboxed JavaScript file, NIP-47 in, your provider's API out.">
+  <link rel="icon" href="assets/isotype.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="blob blob-teal"></div>
+    <div class="blob blob-sun"></div>
+    <div class="blob blob-coral"></div>
+    <div class="blob blob-purple"></div>
+    <div class="bg-noise"></div>
+  </div>
+
+  <header class="nav" id="top">
+    <a class="brand" href="#top" aria-label="LaWallet Plugins home">
+      <img src="assets/lawallet.svg" alt="LaWallet" width="118" height="21">
+      <span class="brand-tag">plugins</span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#directory">Directory</a>
+      <a href="#how">How it works</a>
+      <a href="#build">Build</a>
+      <a href="{{REPO_URL}}/tree/main/docs">Docs</a>
+    </nav>
+    <a class="btn btn-ghost btn-sm" href="{{REPO_URL}}">
+      <svg class="i" aria-hidden="true"><use href="#i-github"/></svg><span>GitHub</span>
+    </a>
+  </header>
+
+  <main>
+    <!-- HERO ---------------------------------------------------------------- -->
+    <section class="hero" id="hero">
+      <div class="hero-copy">
+        <a class="pill" href="#platforms" data-reveal>
+          <span class="dot dot-live"></span> Live on Android · debug builds
+        </a>
+        <h1 data-reveal style="--d:1">
+          <span class="grad-teal">Wallets,</span><br>as plugins.
+        </h1>
+        <p class="lede" data-reveal style="--d:2">
+          Bring any Lightning provider into LaWallet with <strong>one sandboxed JavaScript file</strong>.
+          <span class="grad-sky">NIP&#8209;47</span> in, your provider's API out.
+        </p>
+        <div class="cta" data-reveal style="--d:3">
+          <a class="btn btn-primary" href="#directory">
+            <span>Browse plugins</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg>
+            <span class="shine" aria-hidden="true"></span>
+          </a>
+          <a class="btn btn-term" href="#build">
+            <svg class="i" aria-hidden="true"><use href="#i-terminal"/></svg>
+            <span class="gt">&gt;</span>build a plugin<span class="caret" aria-hidden="true"></span>
+          </a>
+        </div>
+        <dl class="hero-stats" data-reveal style="--d:4">
+          <div><dt>{{COUNT}}</dt><dd>{{COUNT_LABEL}}</dd></div>
+          <div><dt>1</dt><dd>file per plugin</dd></div>
+          <div><dt>0</dt><dd>keys shared</dd></div>
+        </dl>
+      </div>
+
+      <div class="stage" id="stage" aria-hidden="true">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <svg class="piece piece-mint" viewBox="980 0 66 134"><path fill="#55b68c" d="M1036.68,67.04c5.16-6.9,8.21-15.45,8.21-24.71,0-22.8-18.55-41.36-41.36-41.36v33.3c4.44,0,8.06,3.61,8.06,8.06s-3.61,8.06-8.06,8.06c13.55,0,25.6,6.55,33.15,16.65Z"/></svg>
+        <svg class="piece piece-sun" viewBox="980 0 66 134"><path fill="#fdc800" d="M1036.68,67.04c-7.55-10.1-19.6-16.65-33.15-16.65h-22.13v33.3h22.13c13.55,0,25.6-6.55,33.15-16.65Z"/></svg>
+        <svg class="piece piece-coral" viewBox="980 0 66 134"><path fill="#e95052" d="M1003.53,83.69c4.44,0,8.06,3.61,8.06,8.06s-3.61,8.06-8.06,8.06v33.3c22.8,0,41.36-18.55,41.36-41.36,0-9.25-3.06-17.81-8.21-24.71-7.55,10.1-19.6,16.65-33.15,16.65Z"/></svg>
+        <div class="chip chip-a">get_balance</div>
+        <div class="chip chip-b">make_invoice</div>
+        <div class="chip chip-c">pay_invoice</div>
+        <div class="chip chip-d"><span class="dot dot-live"></span>QuickJS sandbox</div>
+        <div class="tile tile-a">{{HERO_TILE}}</div>
+        <div class="tile tile-b"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></div>
+      </div>
+
+      <a class="scroll-hint" href="#directory" aria-label="Scroll to the directory"><span></span></a>
+    </section>
+
+    <!-- MARQUEE ------------------------------------------------------------- -->
+    <div class="marquee" aria-label="What every plugin gets">
+      <div class="marquee-track">
+        {{MARQUEE}}
+      </div>
+    </div>
+
+    <!-- DIRECTORY ----------------------------------------------------------- -->
+    <section class="section" id="directory">
+      <div class="watermark" data-speed="-0.12" aria-hidden="true">
+        <img src="assets/isotype.svg" alt="">
+      </div>
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Directory</span>
+        <h2>Pick a wallet. <span class="muted">Scan it in.</span></h2>
+        <p>Every plugin here is read straight from <code>plugins/*/manifest.json</code> at build time. Scan a code with
+          LaWallet's scanner, or paste its link. You'll see exactly what it can touch before anything installs.</p>
+      </div>
+      <div class="grid-plugins">
+        {{CARDS}}
+        <a class="plugin plugin-add" href="{{REPO_URL}}/blob/main/docs/create-a-plugin.md" data-reveal style="--d:{{ADD_DELAY}}">
+          <span class="add-plus"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span>
+          <strong>Add your wallet</strong>
+          <span>Start from the template, test it without a network, and open a pull request.</span>
+          <span class="link">Create a plugin <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS (sticky phone story) ---------------------------------- -->
+    <section class="section how" id="how">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">How it works</span>
+        <h2>From QR to wallet, <span class="muted">on your terms.</span></h2>
+      </div>
+      <div class="story">
+        <div class="phone-col">
+          <div class="phone" id="phone" aria-hidden="true">
+            <div class="phone-notch"></div>
+            <div class="screen" data-screen="0">
+              <div class="scr-title">Scan</div>
+              <div class="viewfinder">
+                <div class="vf-qr" data-qr="{{FIRST_LINK}}" data-qr-plain></div>
+                <span class="vf-c tl"></span><span class="vf-c tr"></span><span class="vf-c bl"></span><span class="vf-c br"></span>
+                <span class="vf-line"></span>
+              </div>
+              <div class="scr-muted">Point the camera at a QR code</div>
+              <div class="scr-btn ghost">Paste from clipboard</div>
+            </div>
+            <div class="screen" data-screen="1">
+              <div class="scr-back">‹</div>
+              <div class="scr-title big">Add Plugin</div>
+              <div class="scr-muted sm">{{FIRST_SOURCE}}</div>
+              <div class="scr-label">Available</div>
+              <div class="scr-row">
+                <div><strong>{{FIRST_NAME}}</strong><span class="scr-muted sm">{{FIRST_DESC}}</span></div>
+                <span class="scr-ver">v{{FIRST_VERSION}}</span><span class="scr-btn sm">Install</span>
+              </div>
+            </div>
+            <div class="screen" data-screen="2">
+              <div class="scr-dim"></div>
+              <div class="sheet">
+                <div class="sheet-icon">{{FIRST_ICON}}</div>
+                <div class="sheet-title">Install {{FIRST_NAME}}?</div>
+                <ul class="sheet-list">{{FIRST_PERMS}}</ul>
+                <div class="sheet-warn">A wallet plugin can move the money in that account. Only continue if you trust its author.</div>
+                <div class="scr-btn go">Install</div>
+              </div>
+            </div>
+            <div class="screen" data-screen="3">
+              <div class="scr-title">Wallets</div>
+              <div class="deck">
+                <div class="wcard w-lw"><img src="assets/isotype.svg" alt=""><span>LaWallet</span><b>21,000 sats</b></div>
+                <div class="wcard w-plugin">{{FIRST_ICON}}<span>{{FIRST_NAME}}</span><b>Plugin · signed in</b></div>
+              </div>
+              <div class="scr-muted sm center">Transfer amount · Withdraw to active wallet</div>
+            </div>
+          </div>
+        </div>
+        <ol class="steps">
+          <li class="step" data-step="0">
+            <span class="step-n">01</span>
+            <h3>Scan or paste</h3>
+            <p>The QR holds an install link: <code>lawallet:plugin?url=…</code> pointing at a plugin folder on GitHub.
+              Only HTTPS GitHub links are accepted, and a scan never installs anything on its own.</p>
+          </li>
+          <li class="step" data-step="1">
+            <span class="step-n">02</span>
+            <h3>Pinned to a commit</h3>
+            <p>The app resolves the branch to the exact commit it read right now. Manifest and bundle come from that
+              commit, so what you review is what runs.</p>
+          </li>
+          <li class="step" data-step="2">
+            <span class="step-n">03</span>
+            <h3>Review every permission</h3>
+            <p>The sheet lists each host it connects to, where you sign in, whether it keeps a login, and how often it checks
+              for payments. Nothing is downloaded until you tap Install.</p>
+          </li>
+          <li class="step" data-step="3">
+            <span class="step-n">04</span>
+            <h3>A wallet in your deck</h3>
+            <p>Sign in on the provider's own page (LaWallet never sees the password) and the wallet joins your Lightning
+              deck: balance, transfers, and Pay from when the plugin supports it.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- SECURITY ------------------------------------------------------------ -->
+    <section class="section" id="security">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Isolation</span>
+        <h2>A sandbox that says no <span class="muted">by default.</span></h2>
+      </div>
+      <div class="grid-feat">
+        <div class="feat spotlight" data-reveal><svg class="i i-lg" aria-hidden="true"><use href="#i-cpu"/></svg><h3>Own QuickJS context</h3><p>Its own thread and a 32 MB heap. No file system, no imports, no app objects. A stuck plugin gets stopped, and the app keeps running.</p></div>
+        <div class="feat spotlight" data-reveal style="--d:1"><svg class="i i-lg" aria-hidden="true"><use href="#i-globe"/></svg><h3>Host allowlist</h3><p>HTTPS only, and only to the exact hostnames in the manifest. No redirects, no cookies, no LaWallet credentials.</p></div>
+        <div class="feat spotlight" data-reveal style="--d:2"><svg class="i i-lg" aria-hidden="true"><use href="#i-hash"/></svg><h3>SHA-256 checked</h3><p>The bundle's hash is recorded at install and checked on every load. If the file changes, it doesn't run.</p></div>
+        <div class="feat spotlight" data-reveal style="--d:3"><svg class="i i-lg" aria-hidden="true"><use href="#i-lock"/></svg><h3>Encrypted secrets</h3><p>Tokens are encrypted with an Android Keystore key and kept per plugin <code>id</code>. Removing the plugin wipes them.</p></div>
+        <div class="feat spotlight" data-reveal style="--d:4"><svg class="i i-lg" aria-hidden="true"><use href="#i-shield"/></svg><h3>No payment without you</h3><p><code>pay_invoice</code> is only called after you confirm on LaWallet's own Send screen. A plugin can't start a payment.</p></div>
+        <div class="feat spotlight" data-reveal style="--d:5"><svg class="i i-lg" aria-hidden="true"><use href="#i-key"/></svg><h3>Your keys stay yours</h3><p>No plugin ever sees your nsec, NWC connections, Lightning address or LaWallet session.</p></div>
+      </div>
+    </section>
+
+    <!-- BUILD --------------------------------------------------------------- -->
+    <section class="section" id="build">
+      <div class="build">
+        <div class="build-copy" data-reveal>
+          <span class="eyebrow">Build</span>
+          <h2>One file. <span class="muted">Ship a wallet.</span></h2>
+          <p>A manifest that declares what it touches, and an ES module that answers NIP-47 calls with
+            <code>host.fetch</code>, <code>host.secrets</code> and <code>host.webLogin</code>. Use TypeScript or npm,
+            bundled into a single <code>index.js</code>.</p>
+          <div class="term">
+            <div class="term-bar"><span></span><span></span><span></span><em>mobile-plugins</em></div>
+            <pre><code><span class="c"># copy the template and run its test</span>
+<span class="p">$</span> cp -r template plugins/mywallet
+<span class="p">$</span> node plugins/mywallet/test.mjs
+<span class="ok">template: ok</span>
+<span class="c"># from android-wallet: serve to a debug build</span>
+<span class="p">$</span> scripts/plugins-dev.py<span class="caret" aria-hidden="true"></span></code></pre>
+          </div>
+          <div class="doc-links">
+            <a href="{{REPO_URL}}/blob/main/docs/create-a-plugin.md"><strong>Create a plugin</strong><span>Template, exports, tests</span></a>
+            <a href="{{REPO_URL}}/blob/main/docs/develop-locally.md"><strong>Develop locally</strong><span>Install &amp; Reload from your Mac</span></a>
+            <a href="{{REPO_URL}}/blob/main/docs/install.md"><strong>Install</strong><span>GitHub URL, QR, permissions</span></a>
+            <a href="{{REPO_URL}}/blob/main/docs/plugin-api.md"><strong>API reference</strong><span>Manifest, host API, limits</span></a>
+          </div>
+        </div>
+        <div class="code" data-reveal style="--d:2">
+          <div class="code-tabs" role="tablist">
+            <button role="tab" aria-selected="true" data-tab="js">index.js</button>
+            <button role="tab" aria-selected="false" data-tab="json">manifest.json</button>
+          </div>
+          <pre class="code-body" data-panel="js" data-lang="js">{{CODE_JS}}</pre>
+          <pre class="code-body" data-panel="json" data-lang="json" hidden>{{CODE_JSON}}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORMS ----------------------------------------------------------- -->
+    <section class="section" id="platforms">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Platforms</span>
+        <h2>Same file, <span class="muted">every LaWallet.</span></h2>
+      </div>
+      <div class="grid-plat">
+        <div class="plat spotlight" data-reveal>
+          <div class="plat-top"><svg class="i i-lg" aria-hidden="true"><use href="#i-android"/></svg><span class="badge badge-live"><span class="dot dot-live"></span>Live</span></div>
+          <h3>Android</h3>
+          <p>QuickJS host in LaWallet for Android. Available in debug builds today, and in release builds made with <code>-Pplugins</code>.</p>
+          <ul><li>Add Plugin by GitHub URL</li><li>Scan-to-install QR</li><li>Local development with Reload</li></ul>
+        </div>
+        <div class="plat spotlight" data-reveal style="--d:1">
+          <div class="plat-top"><svg class="i i-lg" aria-hidden="true"><use href="#i-apple"/></svg><span class="badge badge-plan">Planned</span></div>
+          <h3>iOS</h3>
+          <p>The plan: the same <code>index.js</code> on JavaScriptCore, behind a Swift protocol. <strong>Not available yet.</strong></p>
+          <ul><li>Same manifest and NIP-47 calls</li><li>Same host API contract</li><li>Details once the host exists</li></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-in">
+      <a class="brand" href="https://lawallet.io"><img src="assets/lawallet.svg" alt="LaWallet" width="104" height="19"></a>
+      <p>Open source plugins for <a href="https://lawallet.io">LaWallet</a>. Built from
+        <a href="{{REPO_URL}}/tree/{{SHA}}"><code>{{SHA_SHORT}}</code></a>.</p>
+      <nav aria-label="Footer">
+        <a href="{{REPO_URL}}">GitHub</a>
+        <a href="{{REPO_URL}}/tree/main/docs">Docs</a>
+        <a href="plugins.json">plugins.json</a>
+        <a href="https://github.com/lawalletio/android-wallet">Android app</a>
+      </nav>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6M12 19h8"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4M9 18c-4.51 2-5-2-7-2"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></symbol>
+    <symbol id="i-android" viewBox="0 0 24 24"><path d="M5 10v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7M5 10a7 7 0 0 1 14 0zM8 5 6.5 2.5M16 5l1.5-2.5M9.5 7.5v.01M14.5 7.5v.01M2.5 11v5M21.5 11v5M9 18v3M15 18v3"/></symbol>
+    <symbol id="i-apple" viewBox="0 0 24 24"><path d="M12 7c-1-1.5-2.5-2-4-2-3 0-5 2.5-5 6 0 4.5 3 10 6 10 1.2 0 2-.7 3-.7s1.8.7 3 .7c2.2 0 4.3-3.2 5.3-6.2-2-1-3.3-2.6-3.3-4.8 0-1.8 1-3.3 2.4-4.1C18.4 4.6 17 4 15.8 4 14 4 13 5 12 7zM12 7c0-2 1.5-4.5 4-5"/></symbol>
+  </svg>
+
+  <script id="plugins-data" type="application/json">{{DATA}}</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="app.js"></script>
+</body>
+</html>
