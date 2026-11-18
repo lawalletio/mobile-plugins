@@ -19,7 +19,7 @@ page, then answers `get_balance`, `make_invoice` and `lookup_invoice`. Its test 
 
 ```bash
 cp -r template plugins/mywallet
-node plugins/mywallet/test.mjs        # template: ok
+node plugins/mywallet/test.mjs        # Example: ok
 ```
 
 Then replace the Example parts:

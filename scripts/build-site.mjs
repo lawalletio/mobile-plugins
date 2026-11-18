@@ -164,6 +164,8 @@ const vars = {
   CODE_JS: esc(readFileSync(join(ROOT, "template/index.js"), "utf8").trim()),
   CODE_JSON: esc(readFileSync(join(ROOT, "template/manifest.json"), "utf8").trim()),
   DATA: JSON.stringify(data).replace(/</g, "\\u003c"),
+  SKILL_INSTALL: esc(`git clone --depth 1 ${REPO_URL} /tmp/lwp && mkdir -p ~/.claude/skills && cp -R /tmp/lwp/skills/lawallet-plugin ~/.claude/skills/`),
+  AGENT_PROMPT: esc("/lawallet-plugin Set up LaWallet for Android on the emulator, then build a plugin for <Provider>. Their API docs: <link>. Install it on the emulator when its tests pass."),
 };
 
 let html = readFileSync(join(ROOT, "site/index.html"), "utf8");

@@ -5,6 +5,7 @@ A LaWallet plugin adds a kind of wallet to the app: a `manifest.json` and one `i
 
 | Guide | What it covers |
 |---|---|
+| [Build with an agent](build-with-an-agent.md) | Install the `lawallet-plugin` skill, then ask an agent: it sets up the emulator, writes, tests and installs the plugin. |
 | [Create a plugin](create-a-plugin.md) | Start from [`template/`](../template), what each export does, and testing without a network. |
 | [Develop locally](develop-locally.md) | Serve your checkout to a debug build with `scripts/plugins-dev.py`, then **Install** and **Reload** from the phone. |
 | [Install in the app](install.md) | By GitHub URL or QR code, through the permissions sheet. Also the `lawallet:plugin` link format. |
