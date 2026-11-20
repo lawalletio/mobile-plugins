@@ -143,6 +143,7 @@
   }
   $$(".plugin[data-plugin]").forEach((card) => {
     const back = $(".back", card);
+    if (!back) return; // coming soon: no QR side
     back.inert = true;
     $$("[data-flip]", card).forEach((b) => b.addEventListener("click", () => flip(card, true)));
     $$("[data-flip-back]", card).forEach((b) => b.addEventListener("click", () => flip(card, false)));

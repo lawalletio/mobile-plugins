@@ -78,6 +78,7 @@ app needs the wallet ──▶ PluginRegistry.wallet(id) ──▶ hash check �
 | `permissions.hosts` | string[] | `[]` | Exact hostnames for `host.fetch`. No scheme, path, port or wildcard: `a.example.com` doesn't allow `b.example.com`. |
 | `permissions.secrets` | boolean | `false` | Allows `host.secrets`. |
 | `permissions.webLogin.url` | string | none | An `https://` page for `host.webLogin`. The plugin's sign-in also depends on it (see [`login`](#the-plugin-module)). |
+| `comingSoon` | boolean | `false` | Directory only, the app ignores it: the plugin is listed as in development, with a blurred QR and no install link. |
 
 Unknown fields are ignored, so a newer manifest still loads in an older app. Any rule broken means the manifest is
 rejected as a whole: the source lists only valid plugins.

@@ -4,6 +4,7 @@
   "description": "Your Lemon BTC balance as a Lightning wallet",
   "version": "0.1.0",
   "api": 1,
+  "comingSoon": true,
   "main": "index.js",
   "icon": "icon.png",
   "provides": [
