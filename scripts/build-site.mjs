@@ -17,6 +17,7 @@ const REF = process.env.SITE_REF || "main";
 const OUT = join(ROOT, process.env.SITE_OUT || "dist");
 const REPO_URL = `https://github.com/${REPO}`;
 const SHA = process.env.GITHUB_SHA || (() => { try { return execSync("git rev-parse HEAD", { cwd: ROOT }).toString().trim(); } catch { return "local"; } })();
+const SOON_QR = "LaWallet plugin, coming soon";
 const NIP47 = ["get_balance", "make_invoice", "pay_invoice", "lookup_invoice", "list_transactions"];
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -68,7 +69,9 @@ for (const name of readdirSync(pluginsDir).sort()) {
     webLogin: m.permissions?.webLogin?.url ? hostOf(m.permissions.webLogin.url) : null,
     pollSec: m.background?.pollSec ? Math.max(15, m.background.pollSec) : 0,
     source: folder,
-    install: "lawallet:plugin?url=" + encodeURIComponent(folder),
+    // In development: listed, but with no install link (docs/plugin-api.md#manifestjson, comingSoon).
+    soon: m.comingSoon === true,
+    install: m.comingSoon === true ? null : "lawallet:plugin?url=" + encodeURIComponent(folder),
     icon: iconFile ? `icons/${name}${iconFile.slice(iconFile.lastIndexOf("."))}` : null,
     iconSrc: iconFile ? join(dir, iconFile) : null,
   });
@@ -112,19 +115,24 @@ function card(p, i) {
         ${icon(p)}
         <div class="p-title">
           <h3>${esc(p.title)}</h3>
-          <div class="p-meta"><span class="ver">v${esc(p.version)}</span><span>${esc(p.id)}</span></div>
+          <div class="p-meta">${p.soon ? `<span class="soon-tag">In development</span>` : ""}<span class="ver">v${esc(p.version)}</span><span>${esc(p.id)}</span></div>
         </div>
-        <button class="qr-mini" type="button" data-flip data-qr="${esc(p.install)}" aria-label="Show the install QR code for ${esc(p.title)}"></button>
+        ${p.soon
+          // A stand-in QR, blurred: there's no install link to scan yet.
+          ? `<span class="qr-mini soon" data-qr="${esc(SOON_QR)}" role="img" aria-label="${esc(p.title)} isn't available to install yet"></span>`
+          : `<button class="qr-mini" type="button" data-flip data-qr="${esc(p.install)}" aria-label="Show the install QR code for ${esc(p.title)}"></button>`}
       </div>
       <p class="p-desc">${esc(p.description)}</p>
       <div><div class="p-label">Wallet methods</div><ul class="methods">${methods}</ul></div>
       <div><div class="p-label">Permissions</div><ul class="perms">${perms(p)}</ul></div>
       <div class="p-foot">
-        <button class="btn btn-primary" type="button" data-flip>${svg("qr")}<span>Scan to install</span></button>
+        ${p.soon
+          ? `<span class="btn btn-ghost btn-soon" aria-disabled="true">${svg("clock")}<span>Coming soon</span></span>`
+          : `<button class="btn btn-primary" type="button" data-flip>${svg("qr")}<span>Scan to install</span></button>`}
         <a class="btn btn-ghost" href="${esc(p.source)}">${svg("code")}<span>Source</span></a>
       </div>
     </div>
-    <div class="face back spotlight" aria-hidden="true">
+    ${p.soon ? "" : `<div class="face back spotlight" aria-hidden="true">
       <div class="qr-big" data-qr="${esc(p.install)}"></div>
       <h3>Scan with LaWallet</h3>
       <p>Open the scanner in LaWallet for Android (debug build) and point it here. You'll review its permissions before anything installs.</p>
@@ -134,12 +142,12 @@ function card(p, i) {
         <button class="btn btn-ghost" type="button" data-copy="${esc(p.source)}" data-copy-msg="GitHub URL copied">Copy GitHub URL</button>
       </div>
       <button class="btn btn-ghost btn-sm" type="button" data-flip-back>${svg("back")}<span>Back</span></button>
-    </div>
+    </div>`}
   </div>
 </article>`;
 }
 
-const first = plugins[0];
+const first = plugins.find((p) => !p.soon);
 const marquee = ["QuickJS sandbox", "NIP-47 ABI", "Pinned to a commit", "SHA-256 checked", "Host allowlist", "Encrypted secrets", "Web login on the provider's own page", "Scan to install", "No keys shared", "One index.js"];
 const marqueeHtml = [...marquee, ...marquee].map((t) => `<span>${esc(t)}</span>`).join("");
 const data = plugins.map(({ iconSrc, ...p }) => p);
